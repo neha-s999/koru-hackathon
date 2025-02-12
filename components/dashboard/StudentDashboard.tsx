@@ -3,19 +3,40 @@
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useState } from "react";
-import { UserProfile, LevelProgress } from "@/app/types/dashboard";
-import { LevelGrid } from "./LevelGrid";
+import { PlayCircle } from "lucide-react";
+import { StudentProfile } from "@/app/types/dashboard";
 import { AchievementsList } from "./AchievementsList";
-import { GameFlow } from "@/components/game/GameFlow";
 
 interface ProfileCardProps {
-  profile: UserProfile;
-  levels: LevelProgress[];
+  profile: StudentProfile;
+  levels: Array<{
+    level: number;
+    multiplier: number;
+    isUnlocked: boolean;
+  }>;
 }
 
-export function ProfileCard({ profile, levels }: ProfileCardProps) {
-  const [activeTab, setActiveTab] = useState<"stats" | "achievements" | "game">(
-    "stats"
+const mockLessons = [
+  {
+    id: "1",
+    title: "Solar Systems",
+    description: "Learn about our solar system",
+  },
+  {
+    id: "2",
+    title: "Basic Physics",
+    description: "Introduction to physics concepts",
+  },
+  {
+    id: "3",
+    title: "Chemistry 101",
+    description: "Fundamentals of chemistry",
+  },
+];
+
+export function StudentDashboard({ profile, levels }: ProfileCardProps) {
+  const [activeTab, setActiveTab] = useState<"lessons" | "achievements">(
+    "lessons"
   );
 
   return (
@@ -61,11 +82,11 @@ export function ProfileCard({ profile, levels }: ProfileCardProps) {
           <div className="flex">
             <button
               className={`px-4 py-2 ${
-                activeTab === "stats" ? "border-b-2 border-purple-600" : ""
+                activeTab === "lessons" ? "border-b-2 border-purple-600" : ""
               }`}
-              onClick={() => setActiveTab("stats")}
+              onClick={() => setActiveTab("lessons")}
             >
-              My Stats
+              Lessons
             </button>
             <button
               className={`px-4 py-2 ${
@@ -77,25 +98,47 @@ export function ProfileCard({ profile, levels }: ProfileCardProps) {
             >
               Achievements
             </button>
-            <button
+            {/* <button
               className={`px-4 py-2 ${
                 activeTab === "game" ? "border-b-2 border-purple-600" : ""
               }`}
               onClick={() => setActiveTab("game")}
             >
               Game
-            </button>
+            </button> */}
           </div>
         </div>
 
         <div className="mt-4">
-          {activeTab === "stats" && (
-            <LevelGrid levels={levels} currentLevel={profile.level} />
+          {activeTab === "lessons" && (
+            <div className="space-y-3">
+              {mockLessons.map((lesson) => (
+                <div
+                  key={lesson.id}
+                  className="p-4 bg-gray-50 rounded-lg flex justify-between items-center"
+                >
+                  <div>
+                    <h3 className="font-medium">
+                      Lesson {lesson.id}: {lesson.title}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {lesson.description}
+                    </p>
+                  </div>
+                  <button
+                    className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-full ${"bg-purple-400 text-white"}`}
+                  >
+                    <PlayCircle size={14} />
+                    Play game
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
           {activeTab === "achievements" && (
             <AchievementsList achievements={profile.achievements} />
           )}
-          {activeTab === "game" && <GameFlow />}
+          {/* {activeTab === "game" && <GameFlow />} */}
         </div>
       </CardContent>
     </Card>

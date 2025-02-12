@@ -11,6 +11,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
+import { login } from "./actions/auth";
 
 interface StudentInput {
   firstName: string;
@@ -33,8 +34,6 @@ const StudentEngagementPlatform = () => {
   });
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [dashboardData, setDashboardData] =
-    useState<StudentDashboardOutput | null>(null);
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,36 +41,28 @@ const StudentEngagementPlatform = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
 
-    try {
-      const response = await fetch("/api", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      //
-      router.push("/dashboard");
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
+    const response = await login({
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+    });
+
+    if (response.success) {
+      console.log("Redirecting to:", response.redirect);
+      router.push(response.redirect || "/dashboard");
+    } else {
+      setError(response.error || "An error occurred");
     }
-  };
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Student Login</CardTitle>
+          <CardTitle>Login</CardTitle>
           <CardDescription>
             Please enter your details to log in.
           </CardDescription>
@@ -120,9 +111,6 @@ const StudentEngagementPlatform = () => {
           </form>
         </CardContent>
       </Card>
-      {dashboardData && (
-        <div className="mt-6">{/* Render dashboard data here */}</div>
-      )}
     </div>
   );
 };
