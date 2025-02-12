@@ -1,47 +1,43 @@
 "use client";
 
 import { useState } from "react";
-import { File, PlayCircle, X, Menu } from "lucide-react";
+import { File, PlayCircle, X, Menu, Loader2, CheckCircle } from "lucide-react";
 import { TeacherLesson } from "@/app/types/dashboard";
-
+import { LessonChat } from "../chat/LessonChat";
+import { TopicSection } from "@/app/types/lesson";
+import { mockTopics } from "@/mocks/data";
 interface LessonViewerProps {
   lesson: TeacherLesson;
   onClose: () => void;
+  isStudent?: boolean;
 }
 
-interface TopicSection {
-  id: string;
-  title: string;
-  content: string;
-  pageNumber: number;
-}
-
-// Mock topics for demonstration
-const mockTopics: TopicSection[] = [
-  {
-    id: "1",
-    title: "Introduction to Solar System",
-    content: "Overview of planets and celestial bodies",
-    pageNumber: 1,
-  },
-  {
-    id: "2",
-    title: "The Sun",
-    content: "Central star of our solar system",
-    pageNumber: 2,
-  },
-  {
-    id: "3",
-    title: "Inner Planets",
-    content: "Mercury, Venus, Earth, and Mars",
-    pageNumber: 3,
-  },
-];
-
-export function LessonViewer({ lesson, onClose }: LessonViewerProps) {
+export function LessonViewer({
+  lesson,
+  onClose,
+  isStudent = false,
+}: LessonViewerProps) {
   const [selectedTopic, setSelectedTopic] = useState<TopicSection | null>(null);
   const [showARGenerator, setShowARGenerator] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const handleGenerate = async () => {
+    setIsGenerating(true);
+
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    setIsGenerating(false);
+    setShowARGenerator(false);
+    setShowSuccess(true);
+
+    // Auto-hide success message after 3 seconds
+    setTimeout(() => {
+      setShowSuccess(false);
+    }, 3000);
+  };
 
   return (
     <div className="fixed inset-0 bg-white z-50 flex flex-col md:flex-row">
@@ -110,17 +106,17 @@ export function LessonViewer({ lesson, onClose }: LessonViewerProps) {
             <span className="font-medium">{lesson.title}</span>
           </div>
           <div className="flex items-center gap-2">
-            {selectedTopic && (
+            {/* Only show Generate AR button for teachers */}
+            {!isStudent && selectedTopic && (
               <button
                 onClick={() => setShowARGenerator(true)}
                 className="flex items-center gap-2 px-3 py-1.5 bg-purple-600 text-white rounded-full hover:bg-purple-700"
               >
                 <PlayCircle size={16} />
-                <span className="hidden sm:inline">Generate AR for</span>{" "}
-                {selectedTopic.title}
+                <span>Generate AR for</span> {selectedTopic.title}
               </button>
             )}
-            <button onClick={onClose} className="p-2">
+            <button onClick={onClose}>
               <X size={20} />
             </button>
           </div>
@@ -139,25 +135,31 @@ export function LessonViewer({ lesson, onClose }: LessonViewerProps) {
         </div>
 
         {/* Mobile Generate AR Button */}
-        {selectedTopic && (
-          <div className="md:hidden fixed bottom-4 right-4">
-            <button
-              onClick={() => setShowARGenerator(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 shadow-lg"
-            >
-              <PlayCircle size={20} />
-              Generate AR
-            </button>
+        {!isStudent ? (
+          selectedTopic && (
+            <div className="md:hidden fixed bottom-4 right-4">
+              <button
+                onClick={() => setShowARGenerator(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 shadow-lg"
+              >
+                <PlayCircle size={20} />
+                Generate Game
+              </button>
+            </div>
+          )
+        ) : (
+          <div className="w-full max-w-md mx-auto">
+            <LessonChat />
           </div>
         )}
       </div>
 
       {/* AR Generator Dialog */}
-      {showARGenerator && selectedTopic && (
+      {!isStudent && showARGenerator && selectedTopic && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white p-6 rounded-lg w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">
-              Generate AR for {selectedTopic.title}
+              Generate Game for {selectedTopic.title}
             </h3>
             <textarea
               className="w-full p-3 border rounded-lg mb-4"
@@ -168,13 +170,40 @@ export function LessonViewer({ lesson, onClose }: LessonViewerProps) {
               <button
                 onClick={() => setShowARGenerator(false)}
                 className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+                disabled={isGenerating}
               >
                 Cancel
               </button>
-              <button className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
-                Generate
+              <button
+                onClick={handleGenerate}
+                disabled={isGenerating}
+                className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 flex items-center gap-2"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  "Generate"
+                )}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccess && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white p-6 rounded-lg w-full max-w-md text-center">
+            <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">
+              AR Game Generated Successfully!
+            </h3>
+            <p className="text-sm text-gray-600">
+              Your AR game for "{selectedTopic?.title}" is ready to be played.
+            </p>
           </div>
         </div>
       )}

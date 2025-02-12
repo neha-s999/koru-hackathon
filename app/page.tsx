@@ -20,11 +20,6 @@ interface StudentInput {
   password: string;
 }
 
-interface StudentDashboardOutput {
-  dashboardData: object;
-  lessonPlans: object[];
-}
-
 const StudentEngagementPlatform = () => {
   const [formData, setFormData] = useState<StudentInput>({
     firstName: "",

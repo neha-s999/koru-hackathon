@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { TeacherProfile, TeacherLesson } from "@/app/types/dashboard";
-import { PlayCircle, Plus, Edit2, File } from "lucide-react";
+import { Plus, Edit2, File } from "lucide-react";
 import { LessonViewer } from "./LessonViewer";
 
 interface TeacherDashboardProps {
@@ -95,13 +95,6 @@ export function TeacherDashboard({ profile, lessons }: TeacherDashboardProps) {
                       {lesson.description}
                     </p>
                   </div>
-                  {/* <button
-                    onClick={() => handleGenerateGame(lesson)}
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm rounded-full bg-purple-600 text-white hover:bg-purple-700"
-                  >
-                    <PlayCircle size={14} />
-                    Generate game
-                  </button> */}
                 </div>
                 <div className="flex justify-between items-center text-sm text-gray-500">
                   <span>{lesson.studentResponses || 0} student responses</span>

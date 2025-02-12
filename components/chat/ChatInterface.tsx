@@ -24,7 +24,7 @@ export function ChatInterface() {
     scrollToBottom();
   }, [messages]);
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim() || isLoading) return;
 
@@ -39,31 +39,20 @@ export function ChatInterface() {
     setInputValue("");
     setIsLoading(true);
 
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message: inputValue }),
-      });
-
-      const data = await response.json();
-
+    // Simulate response with timeout
+    setTimeout(() => {
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: data.content || "Sorry, I could not process that.",
+        content:
+          "This is a simulated response. The actual API integration will be implemented later.",
         isUser: false,
         timestamp: new Date(),
       };
 
       setMessages((prev) => [...prev, botMessage]);
-    } catch (error) {
-      console.error("Chat error:", error);
-    } finally {
       setIsLoading(false);
-    }
-  }
+    }, 1000);
+  };
 
   return (
     <div className="w-full h-[60px] bg-white flex items-center px-4">
