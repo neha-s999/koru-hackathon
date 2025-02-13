@@ -137,13 +137,13 @@ export function StudentDashboard({ profile, levels }: ProfileCardProps) {
                           {lesson.description}
                         </p>
                       </div>
-                      <button
+                      {/* <button
                         onClick={() => handlePlayGame(lesson.id)}
                         className="flex items-center gap-1 px-3 py-1.5 text-sm rounded-full bg-purple-600 text-white hover:bg-purple-700"
                       >
                         <PlayCircle size={14} />
                         Play game
-                      </button>
+                      </button> */}
                     </div>
                   ))}
                 </div>
@@ -163,32 +163,6 @@ export function StudentDashboard({ profile, levels }: ProfileCardProps) {
               onClose={() => setSelectedLesson(null)}
               isStudent={true}
             />
-          </div>
-
-          {/* Chat Interface */}
-        </div>
-      )}
-
-      {/* Compatibility Message Modal */}
-      {showCompatibilityMessage && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full">
-            <h3 className="text-lg font-semibold mb-2">
-              Browser Compatibility
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              For the best AR experience, please use:
-              <ul className="list-disc ml-4 mt-2">
-                <li>Safari on iOS devices</li>
-                <li>Chrome on Android devices</li>
-              </ul>
-            </p>
-            <button
-              onClick={() => setShowCompatibilityMessage(false)}
-              className="w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
-            >
-              Got it
-            </button>
           </div>
         </div>
       )}

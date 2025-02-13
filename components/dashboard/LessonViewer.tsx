@@ -5,7 +5,9 @@ import { File, PlayCircle, X, Menu, Loader2, CheckCircle } from "lucide-react";
 import { TeacherLesson } from "@/app/types/dashboard";
 import { LessonChat } from "../chat/LessonChat";
 import { TopicSection } from "@/app/types/lesson";
-import { mockTopics } from "@/mocks/data";
+import { mockTopicsByLesson, topicGameLinks } from "@/mocks/data";
+import { getARPrompt } from "@/lib/utils";
+
 interface LessonViewerProps {
   lesson: TeacherLesson;
   onClose: () => void;
@@ -22,6 +24,10 @@ export function LessonViewer({
   const [showSidebar, setShowSidebar] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showCompatibilityMessage, setShowCompatibilityMessage] =
+    useState(false);
+
+  const lessonTopics = mockTopicsByLesson[lesson.title] || [];
 
   const handleGenerate = async () => {
     setIsGenerating(true);
@@ -37,6 +43,26 @@ export function LessonViewer({
     setTimeout(() => {
       setShowSuccess(false);
     }, 3000);
+  };
+  const handlePlayGame = (topic: TopicSection) => {
+    // Check if running on iOS Safari or Android Chrome
+    const isCompatibleBrowser = () => {
+      const ua = navigator.userAgent;
+      const isIOS = /iPad|iPhone|iPod/.test(ua);
+      const isAndroid = /Android/.test(ua);
+      const isChrome = /Chrome/.test(ua);
+      const isSafari = /Safari/.test(ua);
+
+      return (isIOS && isSafari) || (isAndroid && isChrome);
+    };
+
+    const gameLink = topicGameLinks[topic.title] || topicGameLinks.default;
+
+    if (isCompatibleBrowser()) {
+      window.open(gameLink, "_blank");
+    } else {
+      setShowCompatibilityMessage(true);
+    }
   };
 
   return (
@@ -67,31 +93,42 @@ export function LessonViewer({
       `}
       >
         <div className="p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="font-semibold">Topics</h2>
-            <button onClick={() => setShowSidebar(false)} className="md:hidden">
+          {/* Topics Header with Close Button */}
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold">Topics</h3>
+            <button
+              onClick={() => setShowSidebar(false)}
+              className="md:hidden p-1 hover:bg-gray-100 rounded-full"
+            >
               <X size={20} />
             </button>
           </div>
+
+          {/* Topics List */}
           <div className="space-y-2">
-            {mockTopics.map((topic) => (
-              <button
-                key={topic.id}
-                onClick={() => {
-                  setSelectedTopic(topic);
-                  setShowSidebar(false);
-                }}
-                className={`w-full text-left p-2 rounded ${
-                  selectedTopic?.id === topic.id
-                    ? "bg-purple-100 text-purple-700"
-                    : "hover:bg-gray-100"
-                }`}
-              >
-                <div className="font-medium">{topic.title}</div>
-                <div className="text-sm text-gray-500">
-                  Page {topic.pageNumber}
+            {lessonTopics.map((topic) => (
+              <div key={topic.id} className="space-y-2">
+                <div className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-gray-100">
+                  <button
+                    onClick={() => {
+                      setSelectedTopic(topic);
+                      setShowSidebar(false);
+                    }}
+                    className="flex-1 text-left"
+                  >
+                    <span className="font-medium">{topic.title}</span>
+                  </button>
+                  {isStudent && (
+                    <button
+                      onClick={() => handlePlayGame(topic)}
+                      className="flex items-center gap-1 px-2 py-1 text-sm rounded-full bg-purple-600 text-white hover:bg-purple-700 ml-2"
+                    >
+                      <PlayCircle size={14} />
+                      Play game
+                    </button>
+                  )}
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         </div>
@@ -149,7 +186,7 @@ export function LessonViewer({
           )
         ) : (
           <div className="w-full max-w-md mx-auto">
-            <LessonChat />
+            <LessonChat topicTitle={selectedTopic?.title || ""} />
           </div>
         )}
       </div>
@@ -165,6 +202,7 @@ export function LessonViewer({
               className="w-full p-3 border rounded-lg mb-4"
               placeholder="Describe specific AR requirements for this topic..."
               rows={4}
+              defaultValue={getARPrompt(selectedTopic.title)}
             />
             <div className="flex justify-end gap-2">
               <button
@@ -204,6 +242,29 @@ export function LessonViewer({
             <p className="text-sm text-gray-600">
               Your AR game for "{selectedTopic?.title}" is ready to be played.
             </p>
+          </div>
+        </div>
+      )}
+      {/* Compatibility Message Modal */}
+      {showCompatibilityMessage && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+            <h3 className="text-lg font-semibold mb-2">
+              Browser Compatibility
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              For the best AR experience, please use:
+              <ul className="list-disc ml-4 mt-2">
+                <li>Safari on iOS devices</li>
+                <li>Chrome on Android devices</li>
+              </ul>
+            </p>
+            <button
+              onClick={() => setShowCompatibilityMessage(false)}
+              className="w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+            >
+              Got it
+            </button>
           </div>
         </div>
       )}

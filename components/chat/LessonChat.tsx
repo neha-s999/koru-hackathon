@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Send, Loader2 } from "lucide-react";
-import { sampleQuestions } from "@/mocks/data";
+import { getQuestionsAndResponses } from "@/lib/utils";
+
 interface Message {
   id: string;
   content: string;
@@ -10,59 +11,52 @@ interface Message {
   timestamp: Date;
 }
 
-export function LessonChat() {
+export function LessonChat({ topicTitle }: { topicTitle: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const generateResponse = async (question: string) => {
-    // Simulate API delay
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+  // Clear messages when topic changes
+  useEffect(() => {
+    setMessages([]);
+    setInput("");
+  }, [topicTitle]);
 
-    // Sample responses based on keywords
-    let response = "";
-    if (question.toLowerCase().includes("solar system")) {
-      response =
-        "The solar system consists of the Sun, eight planets, dwarf planets, moons, asteroids, and comets. The planets in order from the Sun are: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune.";
-    } else if (question.toLowerCase().includes("gravity")) {
-      response =
-        "Gravity is a force that attracts objects toward each other. The more mass an object has, the stronger its gravitational pull. Earth's gravity is what keeps us on the ground and makes objects fall when dropped.";
-    } else if (question.toLowerCase().includes("force")) {
-      response =
-        "A force is a push or pull that acts upon an object. Forces can cause objects to start moving, stop moving, or change direction. Examples include gravity, friction, and magnetism.";
-    } else {
-      response =
-        "That's an interesting question! Let me help you understand this topic better. Could you be more specific about what you'd like to know?";
-    }
+  const { suggestedQuestions, sampleResponses } =
+    getQuestionsAndResponses(topicTitle);
 
-    setIsLoading(false);
-    return response;
-  };
-
-  const handleSend = async () => {
+  const handleSend = () => {
     if (!input.trim()) return;
 
-    const userMessage: Message = {
+    // Add user message
+    const userMessage = {
       id: Date.now().toString(),
       content: input,
-      role: "user",
+      role: "user" as const,
       timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setIsLoading(true);
 
-    const response = await generateResponse(input);
+    // Improved response matching
+    setTimeout(() => {
+      const response =
+        Object.entries(sampleResponses).find(([key]) =>
+          input.toLowerCase().includes(key.toLowerCase())
+        )?.[1] || sampleResponses.default;
 
-    const assistantMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      content: response,
-      role: "assistant",
-      timestamp: new Date(),
-    };
+      const botMessage = {
+        id: (Date.now() + 1).toString(),
+        content: response,
+        role: "assistant" as const,
+        timestamp: new Date(),
+      };
 
-    setMessages((prev) => [...prev, assistantMessage]);
+      setMessages((prev) => [...prev, botMessage]);
+      setIsLoading(false);
+    }, 1000);
   };
 
   return (
@@ -78,7 +72,7 @@ export function LessonChat() {
         {messages.length === 0 && (
           <div className="space-y-2">
             <p className="text-sm text-gray-500">Suggested questions:</p>
-            {sampleQuestions.map((question, index) => (
+            {suggestedQuestions.map((question, index) => (
               <button
                 key={index}
                 onClick={() => setInput(question)}
