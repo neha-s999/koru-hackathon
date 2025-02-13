@@ -51,19 +51,6 @@ An interactive learning platform that combines traditional lessons with Augmente
   - Email: teacher@example.com
   - Password: teacher123
 
-## Project Structure 📁
-ar-learning-platform/
-├── app/ # Next.js app directory
-│ ├── actions/ # Server actions
-│ ├── api/ # API routes
-│ ├── dashboard/ # Dashboard pages
-│ └── types/ # TypeScript types
-├── components/ # React components
-│ ├── dashboard/ # Dashboard components
-│ └── ui/ # UI components
-├── public/ # Static files
-└── styles/ # Global styles
-
 ## Contributing 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
